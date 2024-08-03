@@ -1,0 +1,2 @@
+# dockerdebianxrdpopenbox
+Dockerfileのサンプル。Debianでxrdpで接続できるイメージ。WindowManagerはopenbox
