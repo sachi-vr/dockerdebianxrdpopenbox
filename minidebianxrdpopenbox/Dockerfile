@@ -10,6 +10,8 @@ ENV TZ=Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt install -y xrdp openbox obconf xterm supervisor \
+    dbus-bin dbus-x11 pipewire pipewire-bin pipewire-pulse wireplumber \
+    pipewire-module-xrdp pulseaudio-utils \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # 適当に0番のターミナルエミュレータを選択したが駄目だった
@@ -31,9 +33,13 @@ RUN useradd -u 3101 -m -s /bin/bash sachi
 RUN echo sachi:secret | chpasswd
 RUN echo root:secret | chpasswd
 
-# OpenBoxを起動するようにする
-RUN echo openbox-session >> /root/.xsession
-RUN echo openbox-session >> /home/sachi/.xsession
+# OpenBoxを起動するようにする(サウンドも対応)
+COPY xrdp-openbox-session /usr/local/bin/xrdp-openbox-session
+RUN chmod +x /usr/local/bin/xrdp-openbox-session \
+ && printf '%s\n' '#!/bin/sh' 'exec dbus-run-session -- /usr/local/bin/xrdp-openbox-session' > /root/.xsession \
+ && cp /root/.xsession /home/sachi/.xsession \
+ && chown sachi:sachi /home/sachi/.xsession \
+ && chmod +x /root/.xsession /home/sachi/.xsession
 
 # supervisordの設定
 COPY supervisord.conf /etc/supervisord.conf
